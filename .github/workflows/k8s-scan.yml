@@ -49,3 +49,10 @@ jobs:
           checkov -d k8s/ \
             --framework kubernetes \
             --soft-fail false
+            
+            
+            
+            
+            
+            
+            
