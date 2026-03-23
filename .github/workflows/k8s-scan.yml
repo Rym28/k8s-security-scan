@@ -2,8 +2,7 @@ name: Scan sécurité manifestes K8s
 
 on:
   push:
-    paths: ["k8s/**"]
-  pull_request:
+    branches: ["main"]
 
 jobs:
   kubesec-scan:
@@ -28,13 +27,13 @@ jobs:
             d=json.load(sys.stdin)
             d=d[0] if isinstance(d,list) else d
             print(d.get('score',0))")
-                        echo "$f: score=$score"
-                        if [ "$score" -lt 1 ]; then
-                          echo "ÉCHEC: score trop bas pour $f"
-                          EXIT=1
-                        fi
-                      done
-                      exit $EXIT
+            echo "$f: score=$score"
+            if [ "$score" -lt 1 ]; then
+              echo "ÉCHEC: score trop bas pour $f"
+              EXIT=1
+            fi
+          done
+          exit $EXIT
 
   checkov-scan:
     runs-on: ubuntu-latest
@@ -49,10 +48,3 @@ jobs:
           checkov -d k8s/ \
             --framework kubernetes \
             --soft-fail false
-            
-            
-            
-            
-            
-            
-            
