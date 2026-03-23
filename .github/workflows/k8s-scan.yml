@@ -1,0 +1,51 @@
+name: Scan sécurité manifestes K8s
+
+on:
+  push:
+    paths: ["k8s/**"]
+  pull_request:
+
+jobs:
+  kubesec-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Kubesec
+        run: |
+          curl -sSL \
+            https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz \
+            -o /tmp/kubesec.tar.gz
+          tar xzf /tmp/kubesec.tar.gz -C /tmp/
+          sudo mv /tmp/kubesec /usr/local/bin/kubesec
+
+      - name: Scanner tous les manifestes — score minimum 1
+        run: |
+          EXIT=0
+          for f in $(find . -name "*.yaml" -path "*/k8s/*"); do
+            score=$(kubesec scan "$f" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+d=d[0] if isinstance(d,list) else d
+print(d.get('score',0))")
+            echo "$f: score=$score"
+            if [ "$score" -lt 1 ]; then
+              echo "ÉCHEC: score trop bas pour $f"
+              EXIT=1
+            fi
+          done
+          exit $EXIT
+
+  checkov-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Checkov
+        run: pip install checkov
+
+      - name: Scanner le répertoire k8s/
+        run: |
+          checkov -d k8s/ \
+            --framework kubernetes \
+            --soft-fail false
