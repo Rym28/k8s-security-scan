@@ -24,17 +24,17 @@ jobs:
           EXIT=0
           for f in $(find . -name "*.yaml" -path "*/k8s/*"); do
             score=$(kubesec scan "$f" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-d=d[0] if isinstance(d,list) else d
-print(d.get('score',0))")
-            echo "$f: score=$score"
-            if [ "$score" -lt 1 ]; then
-              echo "ÉCHEC: score trop bas pour $f"
-              EXIT=1
-            fi
-          done
-          exit $EXIT
+            import json,sys
+            d=json.load(sys.stdin)
+            d=d[0] if isinstance(d,list) else d
+            print(d.get('score',0))")
+                        echo "$f: score=$score"
+                        if [ "$score" -lt 1 ]; then
+                          echo "ÉCHEC: score trop bas pour $f"
+                          EXIT=1
+                        fi
+                      done
+                      exit $EXIT
 
   checkov-scan:
     runs-on: ubuntu-latest
